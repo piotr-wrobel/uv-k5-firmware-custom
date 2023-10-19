@@ -41,6 +41,7 @@
 //	#include "app/spectrum.h"
 #endif
 
+#ifdef ENABLE_VFO_TOGLE_ON_EXIT
 static void SwitchActiveVFO(const bool beep)
 {
 	gEeprom.TX_VFO ^= 1;
@@ -58,6 +59,7 @@ static void SwitchActiveVFO(const bool beep)
 	if (beep)
 		gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
 }
+#endif
 
 void toggle_chan_scanlist(void)
 {	// toggle the selected channels scanlist setting
@@ -148,7 +150,24 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 			break;
 
 		case KEY_2:
-			SwitchActiveVFO(beep);
+			#ifdef ENABLE_VFO_TOGLE_ON_EXIT
+				SwitchActiveVFO(beep);
+			#else
+				gEeprom.TX_VFO ^= 1;
+
+				if (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF)
+					gEeprom.CROSS_BAND_RX_TX = gEeprom.TX_VFO + 1;
+				if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
+					gEeprom.DUAL_WATCH = gEeprom.TX_VFO + 1;
+
+				gRequestSaveSettings  = 1;
+				gFlagReconfigureVfos  = true;
+
+				gRequestDisplayScreen = DISPLAY_MAIN;
+
+				if (beep)
+					gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
+			#endif
 			break;
 
 		case KEY_3:
@@ -269,10 +288,10 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 			if (beep)
 				gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
 			break;
-
+	#ifdef ENABLE_VFO_TOGLE_ON_EXIT
 		case KEY_F:
 			break;
-
+	#endif
 		default:
 			gUpdateStatus   = true;
 			gWasFKeyPressed = false;
@@ -509,10 +528,13 @@ static void MAIN_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 					if (gInputBoxIndex == 0)
 						gAnotherVoiceID = VOICE_ID_CANCEL;
 				#endif
-				} else if(!gWasFKeyPressed)
+				}
+			#ifdef ENABLE_VFO_TOGLE_ON_EXIT
+				else if(!gWasFKeyPressed)
 				{
 					SwitchActiveVFO(true);
 				}
+			#endif
 			}
 			else
 			{

@@ -37,6 +37,7 @@ ENABLE_COPY_CHAN_TO_VFO       := 1
 ENABLE_SPECTRUM               := 1
 #ENABLE_SINGLE_VFO_CHAN        := 1
 #ENABLE_BAND_SCOPE             := 1
+ENABLE_VFO_TOGLE_ON_EXIT	:= 1
 
 #############################################################
 
@@ -214,8 +215,11 @@ CFLAGS += -Wextra
 CFLAGS += -DPRINTF_INCLUDE_CONFIG_H
 CFLAGS += -DGIT_HASH=\"$(GIT_HASH)\"
 
+ifeq ($(ENABLE_VFO_TOGLE_ON_EXIT),1)
+	CFLAGS += -DENABLE_VFO_TOGLE_ON_EXIT
+endif
 ifeq ($(ENABLE_SPECTRUM),1)
-CFLAGS += -DENABLE_SPECTRUM
+	CFLAGS += -DENABLE_SPECTRUM
 endif
 ifeq ($(ENABLE_SWD),1)
 	CFLAGS += -DENABLE_SWD
